@@ -1,0 +1,30 @@
+# Python-generated files
+__pycache__/
+*.py[oc]
+build/
+dist/
+wheels/
+*.egg-info
+
+# Virtual environments
+.venv
+
+# Node/React
+node_modules/
+npm-debug.log*
+yarn-debug.log*
+yarn-error.log*
+pnpm-debug.log*
+.next/
+coverage/
+
+# .NET
+bin/
+obj/
+.vs/
+
+# Environment and OS
+.env
+.env.*
+.DS_Store
+Thumbs.db
