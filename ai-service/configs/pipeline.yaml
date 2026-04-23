@@ -1,0 +1,19 @@
+models:
+  detector_type: yolov8
+  detector_path: models/plate-detector.pt
+  recognizer_type: yolov8-chars
+  recognizer_path: models/plate-characters.pt
+  charset: ""
+  charset_path: data/processed/recognition/charset.txt
+  device: cpu
+
+pipeline:
+  min_confidence: 0.4
+  max_detections: 5
+  input_size: [640, 640]
+
+carla:
+  enabled: false
+  host: 127.0.0.1
+  port: 2000
+  camera_ids: ["cam-front", "cam-left", "cam-right"]

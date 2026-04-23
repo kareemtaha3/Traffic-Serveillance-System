@@ -1,0 +1,5 @@
+carla:
+  enabled: true
+  host: 127.0.0.1
+  port: 2000
+  camera_ids: ["cam-front", "cam-left", "cam-right", "cam-rear"]

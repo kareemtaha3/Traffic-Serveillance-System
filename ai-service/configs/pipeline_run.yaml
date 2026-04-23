@@ -1,0 +1,45 @@
+steps:
+  - name: prepare_detection
+    script: scripts/prepare_ealpr.py
+    args:
+      - --raw
+      - dataset
+      - --out
+      - data/processed/detection
+    enabled: true
+
+  - name: train_detector
+    script: scripts/train_detector.py
+    args:
+      - --data
+      - data/processed/detection/data.yaml
+      - --device
+      - auto
+    enabled: true
+
+  - name: prepare_recognition
+    script: scripts/prepare_ealpr_recognition.py
+    args:
+      - --raw
+      - dataset
+      - --out
+      - data/processed/recognition
+    enabled: true
+
+  - name: train_recognizer
+    script: scripts/train_recognizer.py
+    args:
+      - --data
+      - data/processed/recognition/data.yaml
+      - --device
+      - auto
+    enabled: true
+
+  - name: infer_sample
+    script: main.py
+    args:
+      - --config
+      - configs/pipeline.yaml
+      - --image
+      - path/to/image.jpg
+    enabled: false
