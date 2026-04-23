@@ -28,3 +28,13 @@ obj/
 .env.*
 .DS_Store
 Thumbs.db
+
+# AI service artifacts
+ai-service/data/
+ai-service/models/
+ai-service/outputs/
+ai-service/dataset/
+ai-service/runs/
+ai-service/artifacts/eval_images/
+ai-service/**/*.pt
+
