@@ -35,18 +35,22 @@ class YoloCharRecognizer(Recognizer):
             chars.append((x_center, self._class_to_char(cls_id, names), conf))
 
         if not chars:
+            print("[DEBUG Recognizer] YOLO found 0 individual characters inside the plate crop!")
             return PlateText(text="", score=0.0)
 
         chars.sort(key=lambda item: item[0])
         text = "".join([item[1] for item in chars])
         score = float(sum(item[2] for item in chars) / len(chars))
+        print(f"[DEBUG Recognizer] YOLO found {len(chars)} characters. Ranked text: '{text}', Average Score: {score}")
         return PlateText(text=text, score=score)
 
     def recognize(self, crops: list[np.ndarray]) -> list[PlateText]:
+        print(f"[DEBUG Recognizer] Sending {len(crops)} cropped plates to plate-characters.pt ...")
         results: list[PlateText] = []
         for crop in crops:
             predictions = self.model.predict(crop, device=self.device, verbose=False)
             if not predictions:
+                print("[DEBUG Recognizer] predict() returned 0 predictions.")
                 results.append(PlateText(text="", score=0.0))
                 continue
             results.append(self._decode(predictions[0]))
