@@ -1,30 +1,32 @@
-using Microsoft.AspNetCore.Mvc;
-using Microsoft.EntityFrameworkCore;
 using backend_dotnet.Data;
+using backend_dotnet.DTO;
 using backend_dotnet.Models;
-using backend_dotnet.dto;
+using Microsoft.EntityFrameworkCore;
 
-namespace backend_dotnet.Controllers;
+namespace backend_dotnet.Services;
 
-[ApiController]
-[Route("api/[controller]")]
-public class TrafficController : ControllerBase
+public interface ITrafficService
+{
+    Task<(bool IsSuccess, string Message, int NewFeesCount)> DetectViolationAsync(DetectionRequest request);
+    Task<IEnumerable<FeeResponse>> GetMyFeesAsync(string plate);
+}
+
+public class TrafficService : ITrafficService
 {
     private readonly ApplicationDbContext _context;
 
-    public TrafficController(ApplicationDbContext context)
+    public TrafficService(ApplicationDbContext context)
     {
         _context = context;
     }
 
-    [HttpPost("detect")]
-    public async Task<IActionResult> Detect([FromBody] DetectionRequest request)
+    public async Task<(bool IsSuccess, string Message, int NewFeesCount)> DetectViolationAsync(DetectionRequest request)
     {
         if (string.IsNullOrEmpty(request.LicensePlate))
-            return BadRequest("رقم اللوحة مطلوب");
+            return (false, "رقم اللوحة مطلوب", 0);
 
         var car = await _context.Cars.FirstOrDefaultAsync(c => c.LicensePlate == request.LicensePlate);
-        if (car == null) return NotFound("هذه العربة غير مسجلة في المنظومة");
+        if (car == null) return (false, "هذه العربة غير مسجلة في المنظومة", 0);
 
         var newViolations = new List<LicenseFee>();
 
@@ -52,16 +54,15 @@ public class TrafficController : ControllerBase
         {
             _context.LicenseFees.AddRange(newViolations);
             await _context.SaveChangesAsync();
-            return Ok(new { Message = "تم تسجيل المخالفات بنجاح", Count = newViolations.Count });
+            return (true, "تم تسجيل المخالفات بنجاح", newViolations.Count);
         }
 
-        return Ok(new { Message = "لا توجد مخالفات، القيادة آمنة" });
+        return (true, "لا توجد مخالفات، القيادة آمنة", 0);
     }
 
-    [HttpGet("my-fees/{plate}")]
-    public async Task<ActionResult<IEnumerable<FeeResponse>>> GetFees(string plate)
+    public async Task<IEnumerable<FeeResponse>> GetMyFeesAsync(string plate)
     {
-        var fees = await _context.LicenseFees
+        return await _context.LicenseFees
             .Where(f => f.Car.LicensePlate == plate)
             .Select(f => new FeeResponse {
                 Plate = plate,
@@ -70,9 +71,5 @@ public class TrafficController : ControllerBase
                 IsPaid = f.IsPaid,
                 ViolationReason = f.Amount == 1000 ? "تجاوز السرعة" : "رخصة منتهية"
             }).ToListAsync();
-
-        if (!fees.Any()) return NotFound("لا توجد رسوم مستحقة");
-
-        return Ok(fees);
     }
 }

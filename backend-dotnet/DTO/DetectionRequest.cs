@@ -3,7 +3,7 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Threading.Tasks;
 
-namespace backend_dotnet.dto
+namespace backend_dotnet.DTO
 {
     public class DetectionRequest
     {

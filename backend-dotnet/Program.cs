@@ -1,51 +1,52 @@
 using backend_dotnet.Data;
+using backend_dotnet.Services;
 using Microsoft.EntityFrameworkCore;
 
 var builder = WebApplication.CreateBuilder(args);
 
-// --- 1. الخدمات الأساسية ---
 builder.Services.AddControllers();
 builder.Services.AddEndpointsApiExplorer();
-builder.Services.AddSwaggerGen(); // سواجير عادي بدون إعدادات القفل
+builder.Services.AddSwaggerGen();
 
-// --- 2. إعداد قاعدة البيانات ---
 builder.Services.AddDbContext<ApplicationDbContext>(options =>
     options.UseNpgsql(builder.Configuration.GetConnectionString("DefaultConnection")));
 
+builder.Services.AddHttpClient<IAiServiceClient, AiServiceClient>(client =>
+{
+    var aiUrl = builder.Configuration.GetValue<string>("AiService:BaseUrl") ?? "http://localhost:8001";
+    client.BaseAddress = new Uri(aiUrl);
+    client.Timeout = TimeSpan.FromSeconds(30);
+});
+
+builder.Services.AddScoped<IRouteValidationService, RouteValidationService>();
+builder.Services.AddScoped<ITrafficService, TrafficService>();
+
+builder.Services.AddCors(options =>
+{
+    options.AddPolicy("AllowFrontend", policy =>
+    {
+        policy.WithOrigins("http://localhost:5173", "http://localhost:3000")
+              .AllowAnyHeader()
+              .AllowAnyMethod();
+    });
+});
+
 var app = builder.Build();
 
-// --- 3. Pipeline ---
 if (app.Environment.IsDevelopment())
 {
     app.UseSwagger();
     app.UseSwaggerUI();
 }
 
-app.UseHttpsRedirection();
-
-// حذفنا UseAuthentication هنا
+app.UseCors("AllowFrontend");
 app.UseAuthorization();
-
 app.MapControllers();
 
-// --- 4. تهيئة البيانات (Seeding) ---
 using (var scope = app.Services.CreateScope())
 {
-    var services = scope.ServiceProvider;
-    var context = services.GetRequiredService<ApplicationDbContext>();
-    
+    var context = scope.ServiceProvider.GetRequiredService<ApplicationDbContext>();
     context.Database.EnsureCreated();
-
-    if (!context.Cars.Any())
-    {
-        context.Cars.Add(new backend_dotnet.Models.Car 
-        { 
-            LicensePlate = "أ ب ج 123", 
-            OwnerName = "كريم طه", 
-            LicenseExpiration = DateTime.UtcNow.AddMonths(-2) 
-        });
-        context.SaveChanges();
-    }
 }
 
 app.Run();
