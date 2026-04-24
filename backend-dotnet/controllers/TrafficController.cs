@@ -28,18 +28,16 @@ public class TrafficController : ControllerBase
 
         var newViolations = new List<LicenseFee>();
 
-        // 1. فحص السرعة
         if (request.Speed > 120)
         {
             newViolations.Add(new LicenseFee {
                 CarId = car.Id,
-                Amount = 1000, // يمكن لاحقاً سحب القيمة من جدول Violations
+                Amount = 1000, 
                 IssueDate = DateTime.UtcNow,
                 IsPaid = false
             });
         }
 
-        // 2. فحص صلاحية الرخصة
         if (car.LicenseExpiration < DateTime.UtcNow)
         {
             newViolations.Add(new LicenseFee {

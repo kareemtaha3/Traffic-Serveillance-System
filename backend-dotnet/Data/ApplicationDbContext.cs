@@ -10,7 +10,6 @@ namespace backend_dotnet.Data
         {
         }
 
-        // هنا بنعرف الجداول اللي هتتكرت في Postgres
         public DbSet<Car> Cars { get; set; }
         public DbSet<Violation> Violations { get; set; }
         public DbSet<LicenseFee> LicenseFees { get; set; }
@@ -18,7 +17,6 @@ namespace backend_dotnet.Data
         protected override void OnModelCreating(ModelBuilder modelBuilder)
         {
             base.OnModelCreating(modelBuilder);
-            // ممكن تضيف هنا أي إعدادات خاصة بالعلاقات بين الجداول
         }
     }
 }

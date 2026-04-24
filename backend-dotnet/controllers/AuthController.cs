@@ -56,6 +56,5 @@ public class AuthController : ControllerBase
     }
 }
 
-// DTOs سريعة للـ Auth
 public record RegisterDto(string Email, string Password);
 public record LoginDto(string Email, string Password);
